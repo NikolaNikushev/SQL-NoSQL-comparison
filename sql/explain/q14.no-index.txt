@@ -1,0 +1,22 @@
+Aggregate  (cost=17254.51..17254.52 rows=1 width=8)
+  ->  Gather  (cost=14316.40..17254.38 rows=53 width=23)
+        Workers Planned: 1
+        ->  Parallel Hash Join  (cost=13316.40..16249.08 rows=31 width=23)
+              Hash Cond: ((ie.declarationnumber)::text = (pler.dec_number)::text)
+              ->  Parallel Seq Scan on internationaldeclaration_event ie  (cost=0.00..2918.52 rows=3742 width=24)
+                    Filter: ((activity)::text = ANY ('{"Declaration FINAL_APPROVED by DIRECTOR","Declaration FINAL_APPROVED by SUPERVISOR"}'::text[]))
+              ->  Parallel Hash  (cost=13316.37..13316.37 rows=3 width=23)
+                    ->  Parallel Hash Left Join  (cost=11225.54..13316.37 rows=3 width=23)
+                          Hash Cond: ((pler.dec_number)::text = (de.declarationnumber)::text)
+                          ->  Merge Left Join  (cost=9298.95..11388.77 rows=1 width=23)
+                                Merge Cond: ((pler.case_id)::text = (pe.permit_id)::text)
+                                Filter: (pe.id IS NULL)
+                                ->  Sort  (cost=7075.10..7156.31 rows=32484 width=42)
+                                      Sort Key: pler.case_id
+                                      ->  Parallel Seq Scan on permit_log_entry_relationship pler  (cost=0.00..4640.84 rows=32484 width=42)
+                                ->  Sort  (cost=2223.85..2269.46 rows=18246 width=38)
+                                      Sort Key: pe.permit_id
+                                      ->  Seq Scan on prepaidtravelcosts_event pe  (cost=0.00..932.46 rows=18246 width=38)
+                          ->  Parallel Hash  (cost=1851.98..1851.98 rows=5969 width=25)
+                                ->  Parallel Seq Scan on domesticdeclaration_event de  (cost=0.00..1851.98 rows=5969 width=25)
+                                      Filter: ((activity)::text = ANY ('{"Declaration FINAL_APPROVED by DIRECTOR","Declaration FINAL_APPROVED by SUPERVISOR"}'::text[]))
