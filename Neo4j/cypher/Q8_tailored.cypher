@@ -1,7 +1,7 @@
-Match (pem: PermitEntity)<-[r:PERMIT_ENTITY]
+Match (pem: PermitEntity) <- [r:PERMIT_ENTITY]
 -(a:PermitLogEntryRelationship
 {activity: 'Declaration SUBMITTED by EMPLOYEE'})
-Match (pem)<-[r2:PERMIT_ENTITY]-(a2:PermitLogEntryRelationship)
+Match (pem) <- [r2:PERMIT_ENTITY] - (a2:PermitLogEntryRelationship)
 where a2.activity in ['Permit FINAL_APPROVED by DIRECTOR',
 'Permit FINAL_APPROVED by SUPERVISOR']
 and datetime({ epochMillis:

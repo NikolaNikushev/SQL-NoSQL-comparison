@@ -3,4 +3,4 @@ match (pr2:PermitLogEntryRelationship {activity: 'Permit APPROVED by ADMINISTRAT
 where pr1.caseId = pr2.caseId and
 pr1.decNumber = pr2.decNumber
 and pr1.completeTimestamp < pr2.completeTimestamp
-Create (pr1)-[r:PERMIT_APPROVED_BEFORE_START]->(pr2)
+Create (pr1) - [r:PERMIT_APPROVED_BEFORE_START] -> (pr2)
