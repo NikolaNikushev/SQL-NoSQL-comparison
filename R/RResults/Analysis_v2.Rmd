@@ -1,0 +1,238 @@
+---
+title: "ThesisAnalysis"
+author: "Nikola Nikushev"
+date: "3/7/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+
+#https://stackoverflow.com/a/42820828 for plotting ggplot2
+library(tidyr)
+
+
+neo4j <- read.csv('./neo4j.csv')
+sql <- read.csv('./sql.csv')
+
+getStats <- function (data) {
+  
+  # hist(data)
+  mean = round(mean(data, na.rm = TRUE), digits = 2)
+  min =  round(min(data, na.rm = TRUE), digits = 2)
+  max =  round(max(data, na.rm = TRUE), digits = 2)
+  result <- c(min, mean, max)
+  
+  # Visualize a histogram to see the distribution
+  # hist(data, main='Histogram of execution for Question 12, Cypher query v1', xlab='Execution time in milliseconds', ylab='Number of executions')
+  
+  result
+}
+
+compareValueSets <- function (collections, names, colors, label, extra=100, legendPosition='topleft') {
+    
+    collectedData <- matrix(c(collections),ncol=3,byrow=TRUE)
+    colNames <- c("Min","Average","Max")
+    colnames(collectedData) <- colNames
+    rownames(collectedData) <- names
+    dataAsTable <- as.table(collectedData)
+
+    print(dataAsTable)
+    
+    barplot(dataAsTable, main="", horiz=FALSE, names.arg=c("Min", "Average", "Max"), cex.names=0.8, beside=TRUE, col=colors, ylim=range(pretty(c(0, max(collections) + extra))), ylab = "Processing time in milliseconds")
+    par(xpd=TRUE)
+    legend(legendPosition, legend=names, lty=1:1, col=colors, box.lty=0, ncol=1)
+    
+    df<- as.data.frame(dataAsTable)
+      gp <- ggplot(df,aes(Var1, y=log10(Freq), fill = Var2)) +
+      geom_bar(position = "dodge", stat = "identity") +
+      ylab ('Processing time in factor of log10 in milliseconds') +
+      xlab ('') +
+      labs(fill = "Legend")
+
+      theme_bw()
+      print(gp )
+    
+      png(file=paste(label, ".png", sep=""), width = 400, height = 400)
+      print(gp)
+      dev.off()
+
+           
+}
+
+```
+
+```{r question1}
+compareValueSets(
+  c(
+    getStats(sql$q1.result), 
+    getStats(neo4j$Q1._A.result),
+    getStats(neo4j$Q1._rel_A.result),
+    getStats(neo4j$Q1._A_inlined_where.result),
+    getStats(neo4j$Q1._rel_A_inlined_where.result),
+    getStats(neo4j$Q1._A_inlined_where_tailored.result),
+    getStats(neo4j$Q1._A_rel_tailored.result)
+    
+    ),
+  c("SQL","Neo4j v1","Neo4j v1 rel", "Neo4j v2","Neo4j v2 rel", "Neo4j v3", "Neo4j v3 rel"), c("red","green","blue","brown","orange", "purple", "gray"), "q1")
+
+```
+
+
+```{r question 1 opposite}
+compareValueSets(
+  c(
+    getStats(sql$q2.case2.result), 
+    getStats(neo4j$Q2._Case2.result),
+    getStats(neo4j$Q2._Case2_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q2")
+```
+
+
+```{r question 3}
+compareValueSets(
+  c(
+    getStats(sql$q3.result), 
+    getStats(neo4j$Q3.result),
+    getStats(neo4j$Q3_inline.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q3")
+```
+
+```{r question 4 A}
+compareValueSets(
+  c(
+    getStats(sql$q4.v1.domestic.result), 
+    getStats(neo4j$Q4._A.result),
+    getStats(neo4j$Q4._A_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q4a")
+```
+
+
+```{r question 4 B}
+compareValueSets(
+  c(
+    getStats(sql$q4.v1.inter.result), 
+    getStats(neo4j$Q4._B.result),
+    getStats(neo4j$Q4._B_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q4b")
+```
+
+
+```{r question 4 C}
+compareValueSets(
+  c(
+    getStats(sql$q4.v2.domestic.result), 
+    getStats(neo4j$Q4._C.result),
+    getStats(neo4j$Q4._C_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q4c")
+```
+
+```{r question 4 D}
+compareValueSets(
+  c(
+    getStats(sql$q4.v2.inter.result), 
+    getStats(neo4j$Q4._D.result),
+    getStats(neo4j$Q4._D_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q4d")
+```
+
+
+```{r question 5}
+compareValueSets(
+  c(
+    getStats(sql$q5.result), 
+    getStats(neo4j$Q5._Average.result),
+    getStats(neo4j$Q5._Average_inlined.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2"), c("red","green","blue"), "q5")
+```
+
+
+```{r question 6}
+compareValueSets(
+  c(
+    getStats(sql$q6.result), 
+    getStats(neo4j$Q6.Start.End_max.result),
+    getStats(neo4j$Q6.Start.End_max_tailored.result)
+    ),
+  c("SQL","Neo4j v1", "Neo4j v3"), c("red","green", "blue"), "q6")
+```
+
+```{r question 7}
+compareValueSets(
+  c(
+    getStats(sql$q7.result), 
+    getStats(neo4j$Q7.result)
+    ),
+  c("SQL","Neo4j v1"), c("red","green"), "q7")
+```
+
+```{r question 8}
+compareValueSets(
+  c(
+    getStats(sql$q8.result), 
+    getStats(sql$q8_v2.result), 
+    getStats(neo4j$Q8.result),
+    getStats(neo4j$Q8_cross.result),
+    getStats(neo4j$Q8_tailored.result),
+    getStats(neo4j$Q8_tailored_v2.result),
+    getStats(neo4j$Q8_tailored_nocasematch.result)
+    
+    ),
+  c("SQL v1", "SQL v2","Neo4j v1", "Neo4j v2", "Neo4j v3", "Neo4j v3.2", "Neo4j v3.3"), c("red","brown","purple","green", "green", "yellow","orange"), "q8", extra = 2000, legendPosition='topright')
+```
+
+
+```{r question 9}
+compareValueSets(
+  c(
+    getStats(sql$q9.result), 
+    getStats(sql$q9_v2.result), 
+    getStats(sql$q9_v3_join.result), 
+    getStats(neo4j$Q9.result),
+    getStats(neo4j$Q9_inlined_where.result)
+    ),
+  c("SQL v1", "SQL v2", "SQL v3","Neo4j v1","Neo4j v2"), c("red","orange","purple","green","blue"), "q9")
+```
+
+```{r question 10}
+compareValueSets(
+  c(
+    getStats(sql$q10.result), 
+    getStats(sql$q10_v2.result), 
+    getStats(neo4j$Q10.result),
+    getStats(neo4j$Q10_inlined_where.result)
+    ),
+  c("SQL v1", "SQL v2","Neo4j v1","Neo4j v2"), c("red","brown","green","blue"), "q10")
+
+```
+
+
+
+```{r question 11}
+compareValueSets(
+  c(
+    getStats(sql$q11.result), 
+    getStats(neo4j$Q11.result),
+    getStats(neo4j$Q11_inlined_where.result),
+    getStats(neo4j$Q11_inlined_where_v2.result),
+    getStats(neo4j$Q11_tailored.result)
+    ),
+  c("SQL","Neo4j v1","Neo4j v2", "Neo4j v2.1", "Neo4j v3"), c("red","brown","purple","blue", "green"), "q11")
+```
+
+```{r question 12}
+compareValueSets(
+  c(
+    getStats(sql$q12.result), 
+    getStats(neo4j$Q12.result)
+    ),
+  c("SQL","Neo4j"), c("red","green"), "q12")
+```

@@ -1,0 +1,98 @@
+---
+title: "ThesisAnalysis"
+author: "Nikola Nikushev"
+date: "3/7/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+
+#https://stackoverflow.com/a/42820828 for plotting ggplot2
+library(tidyr)
+
+
+neo4j <- read.csv('../neo4j.csv')
+sql <- read.csv('../sql.csv')
+neo4j_indexed <- read.csv('../indexed/neo4j.csv')
+sql_indexed <- read.csv('../indexed/sql.csv')
+
+getStats <- function (data) {
+  
+  # hist(data)
+  mean = round(mean(data, na.rm = TRUE), digits = 2)
+  min =  round(min(data, na.rm = TRUE), digits = 2)
+  max =  round(max(data, na.rm = TRUE), digits = 2)
+  result <- c(min, mean, max)
+  #hist(data, main='Histogram of execution for Question 12, Cypher query v1', xlab='Execution time in milliseconds', ylab='Number of executions')
+  
+  result
+}
+
+compareValueSets <- function (collections, names, colors, label, extra=100, legendPosition='topleft') {
+    togetherM <- matrix(c(collections),ncol=3,byrow=TRUE)
+    colNames <- c("Min","Average","Max")
+    colnames(togetherM) <- colNames
+    rownames(togetherM) <- names
+    together <- as.table(togetherM)
+
+    # print(together)
+    print(paste(names[1], collections[1],collections[2],collections[3], sep='   &   '))
+    print(paste(names[2], collections[4],collections[5],collections[6], sep='   &   '))
+    
+    df<- as.data.frame(together)
+      gp <- ggplot(df,aes(Var1, y=log10(Freq), fill = Var2)) +
+      geom_bar(position = "dodge", stat = "identity") +
+      ylab ('Processing time in factor of log10 in milliseconds') +
+      xlab ('') +
+      labs(fill = "Legend")
+
+      theme_bw()
+      print(gp )
+    
+      png(file=paste(label, ".png", sep=""), width = 400, height = 400)
+      print(gp)
+      dev.off()
+
+           
+}
+
+
+
+```
+
+```{r}
+hist(sql$q10.result)
+  hist(sql$q10_v2.result)
+  hist(sql_indexed$q10.result)
+  hist(sql_indexed$q10_v2_indexed.result, main = "", xlab="Execution time in milliseconds")
+```
+
+
+```{r question sql}
+
+
+for(i in seq(1,length(sql), by=1)){
+  
+  theSet <- c(
+    getStats(sql[,i]), 
+    getStats(sql_indexed[,i])
+    )
+  compareValueSets(theSet, c("SQL no index","SQL with index"), c("red","green"), strsplit(names(sql), "\\s+")[[i]])
+}
+```
+
+```{r question neo4j}
+
+for(i in seq(1,length(neo4j), by=1)){
+  
+  theSet <- c(
+    getStats(neo4j[,i]), 
+    getStats(neo4j_indexed[,i])
+    )
+  name <- strsplit(names(neo4j), "\\s+")[[i]]
+  compareValueSets(theSet, c(paste("Neo4j", name, "no index",sep=" "),paste("Neo4j", name, "with index",sep=" ")), c("red","green"), name)
+}
+```
+

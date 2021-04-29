@@ -1,0 +1,146 @@
+---
+title: "ThesisAnalysis"
+author: "Nikola Nikushev"
+date: "3/7/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+getStats <- function (data) {
+  
+  mean = mean(data, na.rm = TRUE)
+  min = min(data, na.rm = TRUE)
+  max = max(data, na.rm = TRUE)
+  c(min, mean, max)
+}
+
+trippleCompare <- function (sqlData, neo4jData, neo4jRelationalData, label) {
+  
+  sql <- c(getStats(sqlData))
+  neo <- c(getStats(neo4jData))
+  neoRelational <- c(getStats(neo4jRelationalData))
+  
+  together <- matrix(c(sql, neo, neoRelational),ncol=3,byrow=TRUE)
+  
+  colnames(together) <- c("Min","Average","Max")
+  rownames(together) <- c("SQL","NEO","NEO_RELATIONAL")
+  together <- as.table(together)
+
+  colors <- c("blue","orange","red")
+  barplot(together, main=label, horiz=FALSE, names.arg=c("Min", "Average", "Max"), cex.names=0.8, beside=TRUE, col=colors)
+  par(xpd=TRUE)
+  legend("topleft", legend=c("sql", "neo4j", "neo4j-relational"), lty=1:1, col=colors, box.lty=0, ncol=1)
+
+  
+  print(paste("Min:","Sql =",min(sql), "Neo4J =",min(neo), "Neo4J_relational =",min(neoRelational)))
+  print(paste("Mean:", "Sql =",mean(sql), "Neo4J =",mean(neo), "Neo4J_relational =",mean(neoRelational)))
+  print(paste("Max:","Sql =",max(sql), "Neo4J =",max(neo), "Neo4J_relational =",max(neoRelational)))
+}
+
+statisticsForQuestion <- function(sqlData, neo4jData, label, lablePosition="topleft") {
+  
+  sql <- c(getStats(sqlData))
+  neo <- c(getStats(neo4jData))
+  
+  together <- matrix(c(sql, neo),ncol=3,byrow=TRUE)
+  
+  colnames(together) <- c("Min","Average","Max")
+  rownames(together) <- c("SQL","NEO")
+  together <- as.table(together)
+
+  colors <- c("blue","orange")
+  barplot(together, main=label, horiz=FALSE, names.arg=c("Min", "Average", "Max"), cex.names=0.8, beside=TRUE, col=colors)
+  par(xpd=TRUE)
+  legend(lablePosition, legend=c("sql", "neo4j"), lty=1:1, col=colors, box.lty=0, ncol=1)
+  
+  print(label)
+  
+  print(paste("Min:","Sql = ",min(sql), "Neo4J = ",min(neo)))
+  print(paste("Mean:", "Sql = ",mean(sql), "Neo4J = ",mean(neo)))
+  print(paste("Max:","Sql = ",max(sql), "Neo4J = ",max(neo)))
+}
+```
+
+```{r question1}
+trippleCompare(sql.results$q1.result, neo4j.results$Q1._A.result,neo4j.results$Q1._rel_A.result, label="q1")
+```
+
+```{r question 1 opposite}
+trippleCompare(sql.results$q1.opposite.result, neo4j.results$Q1._B.result,neo4j.results$Q1._rel_B.result, label="q1 opposite")
+```
+
+```{r question 2 case 1}
+statisticsForQuestion(sql.results$q2.case1.result, neo4j.results$Q2._Case1.result, "q2: case1")
+```
+
+```{r question 2 case 2}
+statisticsForQuestion(sql.results$q2.case2.result, neo4j.results$Q2._Case2.result, "q2: case2")
+```
+
+
+
+```{r question 3}
+statisticsForQuestion(sql.results$q3.result, neo4j.results$Q3.result, "q3")
+```
+
+```{r question 4 A}
+statisticsForQuestion(sql.results$q4.v1.domestic.result, neo4j.results$Q4._A.result, "q4-v1-domestic")
+```
+
+
+```{r question 4 B}
+statisticsForQuestion(sql.results$q4.v1.inter.result, neo4j.results$Q4._B.result, "q4-v1-international")
+```
+
+
+```{r question 4 C}
+statisticsForQuestion(sql.results$q4.v2.domestic.result, neo4j.results$Q4.C.result, "q4-v2-domestic")
+```
+
+```{r question 4 D}
+statisticsForQuestion(sql.results$q4.v2.inter.result, neo4j.results$Q4._D.result, "q4-v2-international")
+```
+
+```{r question 4 E}
+statisticsForQuestion(sql.results$q4.v3.domestic.result, neo4j.results$Q4._E_PreApprove_Domestic.result, "q4-v3-domestic")
+```
+
+```{r question 4 F}
+statisticsForQuestion(sql.results$q4.v3.inter.result, neo4j.results$Q4.F_PreApprove_International.result, "q4-v3-international")
+```
+
+```{r question 5}
+statisticsForQuestion(sql.results$q5.result, neo4j.results$Q5._Average.result, "q5")
+```
+
+
+```{r question 6}
+statisticsForQuestion(sql.results$q6.result, neo4j.results$Q6.Start.End_max.result, "q6")
+```
+
+```{r question 7}
+statisticsForQuestion(sql.results$q7.result, neo4j.results$Q7.result, "q7", "topleft")
+```
+
+```{r question 8}
+statisticsForQuestion(sql.results$q8.result, neo4j.results$Q8.result, "q8", "topleft")
+```
+
+
+```{r question 9}
+statisticsForQuestion(sql.results$q9.result, neo4j.results$Q9.result, "q9")
+```
+
+```{r question 10}
+statisticsForQuestion(sql.results$q10.result, neo4j.results$Q10.result, "q10")
+```
+
+```{r question 11}
+statisticsForQuestion(sql.results$q11.result, neo4j.results$Q11.result, "q11")
+```
+
+```{r question 12}
+statisticsForQuestion(sql.results$q12.result, neo4j.results$Q12.result, "q12")
+```
